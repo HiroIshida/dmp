@@ -4,19 +4,18 @@ from mpl_toolkits.mplot3d import Axes3D
 import copy
 
 class DynamicalSystem:
-    def __init__(self, state, N_basis = 10, a_x = 1.0):
-        self.state_init = copy.deepcopy(state)
-        self.state = copy.deepcopy(state)
+    def __init__(self, state_init, N_basis = 10, a_x = 1.0):
+        self.state_init = copy.deepcopy(state_init)
         self.N_basis = N_basis
         self.a_x = a_x
         t_arr = np.linspace(0, 1, N_basis)
         self.c_arr = np.exp(-a_x * t_arr)
 
-    def _time_derivative(self):
+    def ds_dt(self, state):
         a_x = self.a_x
         a = 25
         b = 6
-        x, y, z = self.state
+        x, y, z = state
         dx_dt = - a_x * x
         dy_dt = z 
         dz_dt = a * (b * (-y) - z) + self._force(x) 
@@ -31,18 +30,16 @@ class DynamicalSystem:
         f = np.dot(theta_arr, w_arr) * x * y_diff / w_sum
         return f
 
-    def propagate(self, dt):
-        ds_dt = self._time_derivative()
-        self.state = self.state + ds_dt * dt
-
 if __name__=="__main__":
-    sys = DynamicalSystem(np.array([1.0, 1.0, 0.0]))
+    state = np.array([1.0, 1.0, 0.0])
+    sys = DynamicalSystem(state)
     S_ = []
+    dt = 0.001
     for i in range(1000):
-        sys.propagate(0.001)
-        S_.append(sys.state)
+        ds_dt = sys.ds_dt(state)
+        state = state + ds_dt * dt
+        S_.append(state)
     S = np.array(S_)
     plt.scatter(S[:, 1], S[:, 2])
     plt.show()
-
 
